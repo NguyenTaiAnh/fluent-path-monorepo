@@ -160,6 +160,59 @@ export async function getCourseWithSections(courseId: string) {
   return { ...course, completedLessonIds, progress }
 }
 
+/** Fetch a single course with nested sections → lessons + lesson_media, sorted by order_index using slug */
+export async function getCourseBySlugWithSections(slug: string) {
+  const supabase = createAdminClient()
+  const { data: course, error } = await supabase
+    .from('courses')
+    .select(
+      `
+      *,
+      sections (
+        id,
+        title,
+        order_index,
+        lessons (
+          id,
+          title,
+          lesson_type,
+          order_index,
+          lesson_media (
+            id,
+            media_type,
+            url,
+            source_type,
+            title,
+            order_index
+          )
+        )
+      )
+    `,
+    )
+    .eq('slug', slug)
+    .single()
+
+  if (error) throw error
+
+  // Sort sections and lessons by order_index
+  if (course?.sections) {
+    course.sections.sort((a: Section, b: Section) => a.order_index - b.order_index)
+    course.sections.forEach((section: Section) => {
+      if (section.lessons) {
+        section.lessons.sort((a: Lesson, b: Lesson) => a.order_index - b.order_index)
+      }
+    })
+  }
+
+  // Calculate total lessons
+  const totalLessons = course?.sections?.reduce(
+    (acc: number, s: Section) => acc + (s.lessons?.length || 0),
+    0,
+  )
+
+  return { ...course, totalLessons }
+}
+
 /** Admin: Fetch all courses with sections (for admin panel) */
 export async function getAdminCourses() {
   const supabase = createAdminClient()

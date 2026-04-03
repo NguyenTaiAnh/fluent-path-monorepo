@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Globe } from 'lucide-react'
+import Image from 'next/image'
 import { useDictionary } from '@/i18n/DictionaryProvider'
 
 export function PublicHeader() {
@@ -15,11 +15,11 @@ export function PublicHeader() {
       >
         <div className="flex lg:flex-1">
           <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
-            <div className="bg-indigo-600 text-white p-2 rounded-lg">
-              <Globe className="h-6 w-6" />
+            <div className="flex items-center justify-center h-8 w-8 overflow-hidden rounded-lg">
+              <Image src="/icon.png" alt="TAEnglish Logo" width={32} height={32} className="object-cover" unoptimized/>
             </div>
             <span className="font-bold text-xl tracking-tight text-gray-900 dark:text-white">
-              Effortless English
+              TAEnglish
             </span>
           </Link>
         </div>

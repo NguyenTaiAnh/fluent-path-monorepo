@@ -124,7 +124,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="flex h-16 items-center px-6 border-b border-gray-200 dark:border-gray-800">
         <AcademicCapIcon className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
         <span className="ml-2 text-lg font-bold bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-          FluentPath Admin
+          TAEnglish Admin
         </span>
       </div>
 

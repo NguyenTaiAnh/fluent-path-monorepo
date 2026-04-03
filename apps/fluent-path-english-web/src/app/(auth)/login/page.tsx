@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/client'
+import { getURL } from '@/utils/url'
 import { Globe } from 'lucide-react'
 
 export default function LoginPage() {
@@ -35,7 +36,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/api/auth/callback`,
+        redirectTo: `${getURL()}api/auth/callback`,
       },
     })
     if (error) {
@@ -53,7 +54,7 @@ export default function LoginPage() {
               <Globe className="h-5 w-5" />
             </div>
             <span className="font-bold text-lg text-gray-900 dark:text-white">
-              FluentPath English
+              TAEnglish
             </span>
           </Link>
           <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">

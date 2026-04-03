@@ -9,7 +9,8 @@
     "./enums": "./src/enums/index.ts",
     "./types": "./src/types/index.ts",
     "./constants": "./src/constants/index.ts",
-    "./utils": "./src/utils/index.ts"
+    "./utils": "./src/utils/index.ts",
+    "./lib": "./src/lib/index.ts"
   },
   "author": "NTA",
   "license": "MIT"

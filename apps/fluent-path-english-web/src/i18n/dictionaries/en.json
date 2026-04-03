@@ -29,5 +29,13 @@
     "the_method": "The Source Method",
     "free": "Free",
     "lessons": "lessons"
+  },
+  "metadata": {
+    "title_default": "Learn English with Tai Anh",
+    "title_template": "%s | Learn English with Tai Anh",
+    "description": "Learn English naturally with Tai Anh. The method of deep listening — speaking correctly — thinking in English, without studying grammar rules first.",
+    "og_title": "Learn English with Tai Anh",
+    "og_description": "Learn English naturally and practically with Tai Anh. The method of deep listening — speaking correctly — thinking in English.",
+    "site_name": "Learn English with Tai Anh"
   }
 }

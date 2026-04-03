@@ -56,7 +56,7 @@ export default function RegisterPage() {
               <Globe className="h-5 w-5" />
             </div>
             <span className="font-bold text-lg text-gray-900 dark:text-white">
-              FluentPath English
+              TAEnglish
             </span>
           </Link>
           <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">

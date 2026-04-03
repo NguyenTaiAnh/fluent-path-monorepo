@@ -19,7 +19,7 @@ export default function AboutPage() {
             The Rules
           </h2>
           <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
-            The 7 Rules of FluentPath English
+            The 7 Rules of TAEnglish
           </p>
           <p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-300">
             Learn how to speak English fluently, confidently, and automatically without thinking
@@ -88,7 +88,7 @@ export default function AboutPage() {
               href="/register"
               className="rounded-full bg-indigo-600 px-8 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             >
-              Join the FluentPath English Club
+              Learn English with Tai Anh
             </Link>
           </div>
         </div>

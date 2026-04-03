@@ -82,7 +82,7 @@ export default function CourseDetailPage({
           </h1>
 
           <p className="max-w-2xl text-lg text-gray-300 leading-relaxed mb-10">
-            {course.description || 'Master English with Effortless English method.'}
+            {course.description || 'Master English with TAEnglish method.'}
           </p>
 
           <div className="flex items-center gap-6">

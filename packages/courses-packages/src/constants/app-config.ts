@@ -1,7 +1,7 @@
 /** Application-wide configuration constants */
 export const APP_CONFIG = {
   /** App name */
-  APP_NAME: 'Effortless English',
+  APP_NAME: 'TAEnglish',
 
   /** Default locale */
   DEFAULT_LOCALE: 'vi' as const,

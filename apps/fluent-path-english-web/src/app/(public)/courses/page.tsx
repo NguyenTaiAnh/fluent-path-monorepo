@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server'
+import { getPublishedCourses } from '@/services/courseService'
 import { getDictionary } from '@/i18n/getDictionary'
 import Link from 'next/link'
 import {
@@ -14,23 +14,21 @@ import { Badge } from '@/components/ui/badge'
 import { BookOpen, Users, Sparkles } from 'lucide-react'
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { CourseThumbnail } from '@/components/ui/CourseThumbnail'
+import type { Course } from 'my-libs'
+
+interface DisplayCourse extends Course {
+  totalLessons?: number;
+  enrolled_users?: number;
+}
 
 export default async function CoursesCatalogPage() {
   const dict = await getDictionary()
-  const supabase = await createClient()
 
-  // Fetch only published courses
-  const { data: courses, error } = await supabase
-    .from('courses')
-    .select('*')
-    .eq('status', 'published')
-    .order('order_index', { ascending: true })
+  // Fetch only published courses using admin client service to bypass RLS for public read
+  const courseList = await getPublishedCourses() as DisplayCourse[]
 
-  if (error) {
-    console.error('Error fetching courses:', error)
-  }
-
-  const courseList = courses || []
+  // Sort them by order_index just in case
+  courseList.sort((a, b) => (a.order_index || 0) - (b.order_index || 0))
 
   return (
     <>
@@ -88,7 +86,7 @@ export default async function CoursesCatalogPage() {
                     <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                       <div className="flex items-center gap-1.5">
                         <BookOpen className="h-4 w-4" />
-                        {course.total_lessons || 0} {dict.landing?.lessons || 'lessons'}
+                        {course.totalLessons || 0} {dict.landing?.lessons || 'lessons'}
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Users className="h-4 w-4" />
@@ -105,8 +103,8 @@ export default async function CoursesCatalogPage() {
                           : `$${course.price / 100}`}
                       </div>
                       <Link href={`/courses/${course.slug}`}>
-                        <Button variant="primary" className="rounded-full px-6">
-                          {dict.landing?.start_now || 'View Course'}
+                        <Button variant="outline" className="rounded-full px-6 hover:bg-gray-100 dark:hover:bg-gray-800">
+                          Xem chi tiết
                         </Button>
                       </Link>
                     </div>

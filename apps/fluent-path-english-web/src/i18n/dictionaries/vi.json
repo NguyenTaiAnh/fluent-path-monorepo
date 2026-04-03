@@ -29,5 +29,13 @@
     "the_method": "Phương pháp cốt lõi",
     "free": "Miễn phí",
     "lessons": "bài học"
+  },
+  "metadata": {
+    "title_default": "Học TA cùng TA",
+    "title_template": "%s | Học TA cùng TA",
+    "description": "Học tiếng Anh cùng Tài Anh. Phương pháp nghe sâu — nói đúng — tư duy bằng tiếng Anh, không cần học ngữ pháp từ đầu.",
+    "og_title": "Học TA cùng TA",
+    "og_description": "Học tiếng Anh tự nhiên và thực chiến cùng Tài Anh. Phương pháp nghe sâu — nói đúng — tư duy bằng tiếng Anh.",
+    "site_name": "Học TA cùng TA"
   }
 }

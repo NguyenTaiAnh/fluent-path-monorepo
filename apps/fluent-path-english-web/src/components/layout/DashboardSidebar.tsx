@@ -55,7 +55,7 @@ function SidebarContent({
           </div>
           {!isSidebarCollapsed && (
             <span className="text-base font-bold tracking-tight text-gray-900 dark:text-white truncate">
-              FluentPath
+              TAEnglish
             </span>
           )}
         </Link>

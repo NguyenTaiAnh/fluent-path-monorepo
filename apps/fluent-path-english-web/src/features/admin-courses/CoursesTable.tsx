@@ -230,7 +230,7 @@ export function CoursesTable() {
             label="Title *"
             defaultValue={editingCourse?.title ?? ''}
             required
-            placeholder="e.g. Effortless English Original Course"
+            placeholder="e.g. TAEnglish Original Course"
           />
           <Textarea
             name="description"

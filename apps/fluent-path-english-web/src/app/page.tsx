@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { CheckCircle2, ChevronRight, Headphones, Brain, Sparkles, Globe } from 'lucide-react'
 import { getDictionary } from '@/i18n/getDictionary'
 
@@ -14,11 +15,11 @@ export default async function LandingPage() {
         >
           <div className="flex lg:flex-1">
             <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
-              <div className="bg-indigo-600 text-white p-2 rounded-lg">
-                <Globe className="h-6 w-6" />
+              <div className="flex items-center justify-center h-8 w-8 overflow-hidden rounded-lg">
+                <Image src="/icon.png" alt="TAEnglish Logo" width={32} height={32} className="object-cover" unoptimized/>
               </div>
               <span className="font-bold text-xl tracking-tight text-gray-900 dark:text-white">
-                Effortless English
+                TAEnglish
               </span>
             </Link>
           </div>
@@ -221,12 +222,14 @@ export default async function LandingPage() {
       {/* Footer */}
       <footer className="bg-white dark:bg-gray-950 py-12 border-t border-gray-100 dark:border-gray-800">
         <div className="mx-auto max-w-7xl px-6 lg:px-8 flex flex-col items-center">
-          <div className="flex items-center gap-2 mb-6 text-gray-900 dark:text-white font-bold">
-            <Globe className="h-6 w-6 text-indigo-600" />
-            Effortless English
+          <div className="flex items-center gap-2 mb-6 text-gray-900 dark:text-white font-bold text-xl tracking-tight">
+            <div className="flex items-center justify-center h-8 w-8 overflow-hidden rounded-lg">
+              <Image src="/icon.png" alt="TAEnglish Logo" width={32} height={32} className="object-cover" unoptimized/>
+            </div>
+            TAEnglish
           </div>
           <p className="text-center text-sm leading-5 text-gray-500 dark:text-gray-400">
-            &copy; 2026 Effortless English LLC. All rights reserved. (Demo Clone)
+            &copy; 2026 TAEnglish LLC. All rights reserved. (Demo Clone)
           </p>
         </div>
       </footer>

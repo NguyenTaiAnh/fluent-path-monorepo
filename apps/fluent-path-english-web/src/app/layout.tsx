@@ -16,15 +16,45 @@ const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
 })
+export async function generateMetadata(): Promise<Metadata> {
+  const dict = await getDictionary()
 
-export const metadata: Metadata = {
-  title: {
-    default: 'FluentPath English — Speak English Easily and Fast',
-    template: '%s | FluentPath English',
-  },
-  description:
-    'Learn to speak English naturally and fluently with the FluentPath English method. No grammar rules, just deep listening and active speaking.',
-  keywords: ['learn english', 'fluent path english', 'english speaking', 'english learning'],
+  return {
+    title: {
+      default: dict.metadata?.title_default || 'Học TA cùng TA',
+      template: dict.metadata?.title_template || '%s | Học TA cùng TA',
+    },
+    description:
+      dict.metadata?.description || 'Học tiếng Anh cùng Tài Anh. Phương pháp nghe sâu — nói đúng — tư duy bằng tiếng Anh, không cần học ngữ pháp từ đầu.',
+    keywords: [
+      'học tiếng anh',
+      'Học TA cùng TA',
+      'tiếng anh giao tiếp',
+      'luyện nghe tiếng anh',
+      'english speaking',
+      'fluent english',
+      'Học tiếng Anh cùng Tài Anh'
+    ],
+    authors: [{ name: 'Nguyễn Tài Anh (Leon Nguyen)', url: 'https://github.com/nguyentaianh' }],
+    creator: 'Nguyễn Tài Anh (Leon Nguyen)',
+    icons: {
+      icon: [
+        { url: '/icon.png', type: 'image/png' },
+      ],
+      apple: [
+        { url: '/apple-icon.png', type: 'image/png' },
+      ],
+    },
+    openGraph: {
+      title: dict.metadata?.og_title || 'Học TA cùng TA',
+      description:
+        dict.metadata?.og_description || 'Học tiếng Anh tự nhiên và thực chiến cùng Tài Anh. Phương pháp nghe sâu — nói đúng — tư duy bằng tiếng Anh.',
+      siteName: dict.metadata?.site_name || 'Học TA cùng TA',
+      images: [{ url: '/og-image.png', width: 1024, height: 1024 }],
+      locale: 'vi_VN',
+      type: 'website',
+    },
+  }
 }
 
 export default async function RootLayout({
