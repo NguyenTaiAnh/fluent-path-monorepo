@@ -1,0 +1,8 @@
+{
+  "name": "courses-monorepo",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}

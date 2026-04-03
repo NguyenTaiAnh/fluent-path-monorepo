@@ -1,0 +1,33 @@
+{
+  "navigation": {
+    "dashboard": "Dashboard",
+    "courses": "Courses",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "dashboard": {
+    "welcome": "Welcome back!",
+    "subtitle": "Continue where you left off and improve your English.",
+    "hours_learned": "Hours Learned",
+    "lessons_completed": "Lessons completed",
+    "current_streak": "Current streak"
+  },
+  "landing": {
+    "title": "Speak English Fluently",
+    "subtitle": "Easily and Fast",
+    "desc": "Throw away your grammar books! Learn English naturally like native speakers do. The Effortless English system helps you understand native speech instantly and speak automatically.",
+    "start_now": "Start Learning Now",
+    "how_it_works": "How it works",
+    "no_grammar": "No Grammar Rules",
+    "deep_listening": "Deep Story Listening",
+    "active_speaking": "Active Automatic Speaking",
+    "method_title": "The Method",
+    "method_desc": "Instead of analyzing grammar, we use Mini-Story listening lessons to train your brain to think in natural English automatically.",
+    "login": "Log in",
+    "register": "Sign up free",
+    "the_method": "The Source Method",
+    "free": "Free",
+    "lessons": "lessons"
+  }
+}

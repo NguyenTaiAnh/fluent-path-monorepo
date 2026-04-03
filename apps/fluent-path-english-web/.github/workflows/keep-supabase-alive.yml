@@ -1,0 +1,25 @@
+name: Keep Supabase Alive
+# Ping Supabase every 3 days to prevent free-tier project pausing
+
+on:
+  schedule:
+    - cron: '0 0 */3 * *' # At 00:00 UTC every 3 days
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/courses?select=id&limit=1" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}")
+          echo "HTTP Status: $response"
+          if [ "$response" -ge 200 ] && [ "$response" -lt 400 ]; then
+            echo "✅ Supabase is alive!"
+          else
+            echo "⚠️ Supabase returned status $response"
+            exit 1
+          fi

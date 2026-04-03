@@ -1,0 +1,33 @@
+{
+  "navigation": {
+    "dashboard": "Bảng điều khiển",
+    "courses": "Khóa học",
+    "profile": "Hồ sơ",
+    "settings": "Cài đặt",
+    "logout": "Đăng xuất"
+  },
+  "dashboard": {
+    "welcome": "Chào mừng bạn trở lại!",
+    "subtitle": "Tiếp tục nơi bạn dừng lại và cải thiện tiếng Anh của mình.",
+    "hours_learned": "Giờ đã học",
+    "lessons_completed": "Bài học hoàn thành",
+    "current_streak": "Chuỗi ngày học"
+  },
+  "landing": {
+    "title": "Nói Tiếng Anh Trôi Chảy",
+    "subtitle": "Dễ dàng và Nhanh chóng",
+    "desc": "Quên đi các cuốn sách ngữ pháp nhàm chán! Hãy học ngôn ngữ một cách tự nhiên như người bản xứ. Phương pháp Effortless English giúp bạn nghe hiểu lập tức và nói phản xạ tự động.",
+    "start_now": "Bắt Đầu Học Ngay",
+    "how_it_works": "Cách hoạt động",
+    "no_grammar": "Không Học Ngữ Pháp",
+    "deep_listening": "Nghe Sâu 1 Câu Truyện",
+    "active_speaking": "Trả Lời Nhanh Nhạy bén",
+    "method_title": "Phương Pháp Học",
+    "method_desc": "Thay vì phân tích ngữ pháp, chúng tôi sử dụng Mini-Story (hỏi đáp vòng lặp) để huấn luyện bộ não của bạn suy nghĩ bằng Tiếng Anh tự nhiên.",
+    "login": "Đăng nhập",
+    "register": "Đăng ký miễn phí",
+    "the_method": "Phương pháp cốt lõi",
+    "free": "Miễn phí",
+    "lessons": "bài học"
+  }
+}
