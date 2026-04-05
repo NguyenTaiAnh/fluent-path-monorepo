@@ -10,6 +10,7 @@ import {
   ChevronLeft,
   ChevronRight,
   GraduationCap,
+  Headphones,
   Shield,
   X,
 } from 'lucide-react'
@@ -19,6 +20,7 @@ import { useDictionary } from '@/i18n/DictionaryProvider'
 import useSWR from 'swr'
 import { fetcher } from '@/lib/fetcher'
 import { useEffect } from 'react'
+import Image from 'next/image'
 
 function SidebarContent({
   isSidebarCollapsed,
@@ -36,6 +38,7 @@ function SidebarContent({
   const navigation = [
     { name: dict.navigation?.dashboard || 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: dict.navigation?.courses || 'My Courses', href: '/my-courses', icon: BookOpen },
+    { name: dict.navigation?.audioLibrary || 'Audio Library', href: '/audio-courses', icon: Headphones },
     { name: dict.navigation?.profile || 'Profile', href: '/profile', icon: User },
     { name: dict.navigation?.settings || 'Settings', href: '/settings', icon: Settings },
   ]
@@ -50,9 +53,7 @@ function SidebarContent({
         )}
       >
         <Link href="/dashboard" className="flex items-center gap-2.5 min-w-0" onClick={onClose}>
-          <div className="bg-indigo-600 text-white p-1.5 rounded-lg shrink-0">
-            <GraduationCap className="w-5 h-5" />
-          </div>
+         <Image src="/icon.png" alt="TAEnglish Logo" width={20} height={20} className="object-cover" unoptimized/>
           {!isSidebarCollapsed && (
             <span className="text-base font-bold tracking-tight text-gray-900 dark:text-white truncate">
               TAEnglish

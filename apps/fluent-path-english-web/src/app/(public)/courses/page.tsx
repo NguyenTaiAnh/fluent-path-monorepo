@@ -15,6 +15,8 @@ import { BookOpen, Users, Sparkles } from 'lucide-react'
 import { PublicHeader } from '@/components/layout/PublicHeader'
 import { CourseThumbnail } from '@/components/ui/CourseThumbnail'
 import type { Course } from 'my-libs'
+import Image from 'next/image'
+import { MobileNav } from '@/components/layout/MobileNav'
 
 interface DisplayCourse extends Course {
   totalLessons?: number;
@@ -36,15 +38,62 @@ export default async function CoursesCatalogPage() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-24">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           {/* Header */}
-          <div className="text-center mb-16">
-            <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-5xl mb-4">
+         {/* Header */}
+      <header className="fixed inset-x-0 top-0 z-50 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 transition-all">
+        <nav
+          className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8"
+          aria-label="Global"
+        >
+          <div className="flex lg:flex-1">
+            <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
+              <div className="flex items-center justify-center h-8 w-8 overflow-hidden rounded-lg">
+                <Image src="/icon.png" alt="TAEnglish Logo" width={32} height={32} className="object-cover" unoptimized/>
+              </div>
+              <span className="font-bold text-xl tracking-tight text-gray-900 dark:text-white">
+                TAEnglish
+              </span>
+            </Link>
+          </div>
+          <div className="hidden lg:flex lg:gap-x-12">
+            <Link
+              href="/about"
+              className="text-sm font-semibold leading-6 text-gray-900 hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400 transition-colors"
+            >
+              {dict.landing?.the_method || 'The Method'}
+            </Link>
+            <Link
+              href="/courses"
+              className="text-sm font-semibold leading-6 text-gray-900 hover:text-indigo-600 dark:text-gray-100 dark:hover:text-indigo-400 transition-colors"
+            >
               {dict.navigation?.courses || 'Courses'}
-            </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto font-medium">
-              {dict.landing?.subtitle || 'Find the right course to level up your English.'}
-            </p>
+            </Link>
           </div>
 
+          {/* Desktop auth buttons */}
+          <div className="hidden lg:flex lg:flex-1 lg:justify-end gap-4 items-center">
+            <Link
+              href="/login"
+              className="text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100 hover:text-indigo-600 transition-colors"
+            >
+              {dict.landing?.login || 'Log in'}
+            </Link>
+            <Link
+              href="/register"
+              className="rounded-full bg-gray-900 dark:bg-white px-5 py-2.5 text-sm font-semibold text-white dark:text-gray-900 shadow-sm hover:bg-indigo-600 dark:hover:bg-indigo-500 hover:text-white transition-all duration-300 transform hover:-translate-y-0.5"
+            >
+              {dict.landing?.register || 'Sign up free'}
+            </Link>
+          </div>
+
+          {/* Mobile hamburger menu */}
+          <MobileNav dict={{
+            the_method: dict.landing?.the_method,
+            courses: dict.navigation?.courses,
+            login: dict.landing?.login,
+            register: dict.landing?.register,
+          }} />
+        </nav>
+      </header>
           {/* Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {courseList.length === 0 ? (

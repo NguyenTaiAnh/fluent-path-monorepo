@@ -2,11 +2,14 @@
 
 import { DashboardSidebar } from './DashboardSidebar'
 import { DashboardHeader } from './DashboardHeader'
+import { AudioPlayer } from '../audio-player/AudioPlayer'
 import { useUIStore } from '@/store/useUIStore'
+import { useAudioPlayerStore } from '@/store/useAudioPlayerStore'
 import { cn } from '@/lib/utils'
 
 export function DashboardClientLayout({ children }: { children: React.ReactNode }) {
   const { isSidebarCollapsed } = useUIStore()
+  const hasPlaylist = useAudioPlayerStore((s) => s.playlist.length > 0)
 
   return (
     <div>
@@ -18,10 +21,12 @@ export function DashboardClientLayout({ children }: { children: React.ReactNode 
         )}
       >
         <DashboardHeader />
-        <main className="py-10">
+        <main className={cn('py-10', hasPlaylist && 'pb-28')}>
           <div className="px-4 sm:px-6 lg:px-8">{children}</div>
         </main>
       </div>
+      <AudioPlayer />
     </div>
   )
 }
+

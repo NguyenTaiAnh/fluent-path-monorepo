@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/client'
 import { Globe } from 'lucide-react'
+import Image from 'next/image'
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('')
@@ -52,9 +53,7 @@ export default function RegisterPage() {
         {/* Logo */}
         <div className="text-center">
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="bg-indigo-600 text-white p-2 rounded-lg">
-              <Globe className="h-5 w-5" />
-            </div>
+            <Image src="/icon.png" alt="TAEnglish Logo" width={30} height={30} className="object-cover" unoptimized/>
             <span className="font-bold text-lg text-gray-900 dark:text-white">
               TAEnglish
             </span>
