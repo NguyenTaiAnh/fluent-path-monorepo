@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect, useCallback, useState } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import Image from 'next/image'
 import {
   Play,
@@ -87,37 +87,34 @@ export function AudioPlayer() {
 
   const currentTrack = playlist[currentTrackIndex]
 
-  // Sync audio element with store state
+  // Track a "generation" that increments on every track change or repeat-restart
+  // This forces the sync effect to re-run even when currentTrackIndex stays the same (repeat one)
+  const [playGeneration, setPlayGeneration] = useState(0)
+
+  // Sync audio element with store state — loads new source and plays
   useEffect(() => {
     const audio = audioRef.current
     if (!audio || !currentTrack) return
 
-    // iOS Safari: must set src and play in sequence
-    // Using a promise chain ensures iOS processes the source change before play
     audio.src = currentTrack.audioUrl
+    audio.currentTime = 0
     audio.load()
 
     if (isPlaying) {
-      // Small delay to let iOS process source change
-      const playPromise = audio.play()
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          // iOS may block autoplay — user needs to tap play
-          setIsPlaying(false)
-        })
-      }
+      const p = audio.play()
+      if (p) p.catch(() => setIsPlaying(false))
     }
-    // Only re-run when track changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTrackIndex, currentTrack?.audioUrl])
+  }, [currentTrackIndex, currentTrack?.audioUrl, playGeneration])
 
-  // Play/pause sync
+  // Play/pause sync (only triggers when isPlaying changes, NOT on track change)
   useEffect(() => {
     const audio = audioRef.current
     if (!audio || !currentTrack) return
 
     if (isPlaying) {
-      audio.play().catch(() => setIsPlaying(false))
+      const p = audio.play()
+      if (p) p.catch(() => setIsPlaying(false))
     } else {
       audio.pause()
     }
@@ -129,15 +126,6 @@ export function AudioPlayer() {
       audioRef.current.playbackRate = playbackRate
     }
   }, [playbackRate])
-
-  // Seek when store currentTime is reset (e.g., prevTrack restart, repeat one)
-  useEffect(() => {
-    const audio = audioRef.current
-    if (!audio) return
-    if (currentTime === 0 && audio.currentTime > 0.5) {
-      audio.currentTime = 0
-    }
-  }, [currentTime])
 
   // Sleep timer check
   useEffect(() => {
@@ -174,10 +162,6 @@ export function AudioPlayer() {
   }, [currentTrack, courseTitle, courseThumbnail])
 
   // 2. Register action handlers for lock screen / notification bar / Bluetooth
-  // iOS Safari limitation: lock screen ALWAYS shows rewind/forward 15s buttons visually.
-  // Web apps CANNOT change button appearance (only native apps can via MPRemoteCommandCenter).
-  // Pragmatic fix: map seekbackward/seekforward to prevTrack/nextTrack so pressing
-  // the 15s buttons actually SKIPS tracks instead of seeking.
   useEffect(() => {
     if (!('mediaSession' in navigator)) return
 
@@ -187,7 +171,8 @@ export function AudioPlayer() {
       ['previoustrack', () => { prevTrack() }],
       ['nexttrack', () => { nextTrack() }],
       ['stop', () => { clearPlayer() }],
-      // iOS: these buttons look like ⏪15s/15s⏩ but will now SKIP tracks
+      // iOS: seekbackward/seekforward buttons always show on lock screen
+      // Map them to skip track instead of seeking
       ['seekbackward', () => { prevTrack() }],
       ['seekforward', () => { nextTrack() }],
     ]
@@ -209,20 +194,17 @@ export function AudioPlayer() {
     navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused'
   }, [isPlaying])
 
-  // 4. Update position state for lock screen progress bar (throttled to reduce overhead)
+  // 4. Update position state for lock screen progress bar
   useEffect(() => {
     if (!('mediaSession' in navigator) || !duration || !isFinite(duration)) return
-    // Only update every ~5 seconds to avoid iOS performance issues
     const roundedTime = Math.floor(currentTime / 5) * 5
     try {
       navigator.mediaSession.setPositionState({
-        duration: duration,
-        playbackRate: playbackRate,
+        duration,
+        playbackRate,
         position: Math.min(roundedTime, duration),
       })
-    } catch {
-      // setPositionState not supported in all browsers
-    }
+    } catch { /* setPositionState not supported in all browsers */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [Math.floor(currentTime / 5), duration, playbackRate])
 
@@ -238,35 +220,50 @@ export function AudioPlayer() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [showSleepMenu])
 
-  // Audio event handlers
-  const handleTimeUpdate = useCallback(() => {
-    const audio = audioRef.current
-    if (!audio || isDraggingRef.current) return
-    setProgress(audio.currentTime, audio.duration)
-  }, [setProgress])
-
-  const handleEnded = useCallback(() => {
-    nextTrack()
-  }, [nextTrack])
-
-  const handleError = useCallback(() => {
-    nextTrack()
-  }, [nextTrack])
-
+  // ─── Audio event handlers ───
+  // Attach directly to the audio element, reading latest store state via get() to avoid stale closures
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
 
-    audio.addEventListener('timeupdate', handleTimeUpdate)
-    audio.addEventListener('ended', handleEnded)
-    audio.addEventListener('error', handleError)
+    const onTimeUpdate = () => {
+      if (isDraggingRef.current) return
+      setProgress(audio.currentTime, audio.duration)
+    }
+
+    const onEnded = () => {
+      // Read fresh state from store to get current repeatMode
+      const state = useAudioPlayerStore.getState()
+
+      if (state.repeatMode === 'one') {
+        // Repeat one: restart same track
+        audio.currentTime = 0
+        audio.play().catch(() => {})
+        // Also bump generation to keep UI in sync
+        setPlayGeneration((g) => g + 1)
+      } else {
+        // nextTrack handles repeat-all and shuffle
+        state.nextTrack()
+      }
+    }
+
+    const onError = () => {
+      // Skip broken tracks
+      useAudioPlayerStore.getState().nextTrack()
+    }
+
+    audio.addEventListener('timeupdate', onTimeUpdate)
+    audio.addEventListener('ended', onEnded)
+    audio.addEventListener('error', onError)
 
     return () => {
-      audio.removeEventListener('timeupdate', handleTimeUpdate)
-      audio.removeEventListener('ended', handleEnded)
-      audio.removeEventListener('error', handleError)
+      audio.removeEventListener('timeupdate', onTimeUpdate)
+      audio.removeEventListener('ended', onEnded)
+      audio.removeEventListener('error', onError)
     }
-  }, [handleTimeUpdate, handleEnded, handleError])
+    // Only re-attach if the audio element ref changes (it shouldn't)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Progress bar seeking
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {

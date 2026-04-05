@@ -19,20 +19,48 @@ export default function RegisterPage() {
     setLoading(true)
     setError(null)
     setMessage(null)
-    const { error } = await supabase.auth.signUp({
+
+    // TODO: Re-enable email verification later
+    // const { error } = await supabase.auth.signUp({
+    //   email,
+    //   password,
+    //   options: {
+    //     emailRedirectTo: `${window.location.origin}/api/auth/callback`,
+    //   },
+    // })
+    // if (error) { setError(error.message) }
+    // else { setMessage('Registration successful! Check your email to verify your account.') }
+
+    // Sign up without email confirmation
+    const { error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/api/auth/callback`,
+        // No emailRedirectTo — skip verification
+        data: { email_confirmed: true },
       },
     })
 
-    if (error) {
-      setError(error.message)
-    } else {
-      setMessage('Registration successful! Check your email to verify your account.')
+    if (signUpError) {
+      setError(signUpError.message)
+      setLoading(false)
+      return
     }
-    setLoading(false)
+
+    // Immediately sign in after successful registration
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+
+    if (signInError) {
+      setError(signInError.message)
+      setLoading(false)
+      return
+    }
+
+    // Redirect to dashboard
+    window.location.href = '/dashboard'
   }
 
   const handleGoogleLogin = async () => {
