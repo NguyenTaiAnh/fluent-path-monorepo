@@ -221,49 +221,8 @@ export function AudioPlayer() {
   }, [showSleepMenu])
 
   // ─── Audio event handlers ───
-  // Attach directly to the audio element, reading latest store state via get() to avoid stale closures
-  useEffect(() => {
-    const audio = audioRef.current
-    if (!audio) return
+  // Handlers are attached directly to the <audio> element via React props
 
-    const onTimeUpdate = () => {
-      if (isDraggingRef.current) return
-      setProgress(audio.currentTime, audio.duration)
-    }
-
-    const onEnded = () => {
-      // Read fresh state from store to get current repeatMode
-      const state = useAudioPlayerStore.getState()
-
-      if (state.repeatMode === 'one') {
-        // Repeat one: restart same track
-        audio.currentTime = 0
-        audio.play().catch(() => {})
-        // Also bump generation to keep UI in sync
-        setPlayGeneration((g) => g + 1)
-      } else {
-        // nextTrack handles repeat-all and shuffle
-        state.nextTrack()
-      }
-    }
-
-    const onError = () => {
-      // Skip broken tracks
-      useAudioPlayerStore.getState().nextTrack()
-    }
-
-    audio.addEventListener('timeupdate', onTimeUpdate)
-    audio.addEventListener('ended', onEnded)
-    audio.addEventListener('error', onError)
-
-    return () => {
-      audio.removeEventListener('timeupdate', onTimeUpdate)
-      audio.removeEventListener('ended', onEnded)
-      audio.removeEventListener('error', onError)
-    }
-    // Only re-attach if the audio element ref changes (it shouldn't)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   // Progress bar seeking
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -309,6 +268,25 @@ export function AudioPlayer() {
         playsInline
         webkit-playsinline="true"
         x-webkit-airplay="allow"
+        onTimeUpdate={() => {
+          if (isDraggingRef.current || !audioRef.current) return
+          setProgress(audioRef.current.currentTime, audioRef.current.duration)
+        }}
+        onEnded={() => {
+          const state = useAudioPlayerStore.getState()
+          if (state.repeatMode === 'one') {
+            if (audioRef.current) {
+              audioRef.current.currentTime = 0
+              audioRef.current.play().catch(() => {})
+            }
+            setPlayGeneration((g) => g + 1)
+          } else {
+            state.nextTrack()
+          }
+        }}
+        onError={() => {
+          useAudioPlayerStore.getState().nextTrack()
+        }}
       />
 
       {/* Player Bar */}

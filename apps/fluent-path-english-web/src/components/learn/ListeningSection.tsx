@@ -9,6 +9,7 @@ import { useAudioUtils } from '@/utils/audio'
 import { useAudioControls } from '@/hooks/audio/useAudioControls'
 import { ListeningSectionProps } from '@/types/audio'
 import { PdfViewer } from '../ui/PdfViewer'
+import { TranscriptKaraoke } from './TranscriptKaraoke'
 
 export function ListeningSection({
   speed,
@@ -16,8 +17,10 @@ export function ListeningSection({
   partId,
   contentUrl,
   pdfUrl,
+  courseId,
   onComplete,
 }: ListeningSectionProps) {
+  const isPimsleur = courseId === '29423c2e-3da5-4ad0-a640-cd23f3260114'
   const audioRef = useRef<HTMLAudioElement>(null)
   const { markSectionComplete, completedSections } = useLessonStore()
   const isCompleted = completedSections[`${lessonId}_${partId}`]
@@ -72,6 +75,21 @@ export function ListeningSection({
     }
   }, [audioState.playbackRate, audioRef])
 
+  // Listen for transcript seek events (when user clicks a transcript segment)
+  useEffect(() => {
+    const handleSeek = (e: Event) => {
+      const time = (e as CustomEvent).detail?.time
+      if (audioRef.current && typeof time === 'number') {
+        audioRef.current.currentTime = time
+        if (!audioState.isPlaying) {
+          audioRef.current.play().catch(() => {})
+        }
+      }
+    }
+    window.addEventListener('transcript-seek', handleSeek)
+    return () => window.removeEventListener('transcript-seek', handleSeek)
+  }, [audioState.isPlaying])
+
   const toggleLoop = useCallback(() => {
     dispatch({ type: 'TOGGLE_LOOP' })
   }, [dispatch])
@@ -111,7 +129,7 @@ export function ListeningSection({
 
   return (
     <div
-      className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 h-full flex flex-col"
+      className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 flex flex-col min-h-fit"
       data-section-id={partId}
     >
       {/* Hidden audio element */}
@@ -232,68 +250,132 @@ export function ListeningSection({
           </div>
         </div>
 
+        {/* Karaoke Transcript Sync */}
+        {!isPimsleur && (
+          <TranscriptKaraoke
+            partId={partId}
+            currentTime={audioState.currentTime}
+            isPlaying={audioState.isPlaying}
+          />
+        )}
+
         {/* Transcript / PDF Area */}
-        <div className="w-full max-w-3xl bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden shadow-sm h-full">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-950/30 gap-4">
-            <h3 className="font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
-              <FileText className="w-5 h-5 text-indigo-500" />
-              Lesson Document
-            </h3>
-            <div className="flex items-center gap-3">
-              {contentUrl && (
-                <a
-                  href={contentUrl}
-                  download
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-900/40 dark:text-indigo-400 dark:hover:bg-indigo-900/60 transition-colors"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Audio</span>
-                </a>
-              )}
-              {pdfUrl && (
-                <>
+        {isPimsleur ? (
+          <div className="w-full max-w-3xl bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden shadow-sm h-full">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-950/30 gap-4">
+              <h3 className="font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-indigo-500" />
+                Lesson Document
+              </h3>
+              <div className="flex items-center gap-3">
+                {contentUrl && (
                   <a
-                    href={pdfUrl}
+                    href={contentUrl}
                     download
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-900/30 dark:text-rose-400 dark:hover:bg-rose-900/50 transition-colors"
+                    className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-900/40 dark:text-indigo-400 dark:hover:bg-indigo-900/60 transition-colors"
                   >
-                    <Download className="w-3.5 h-3.5" />
-                    PDF
+                    <Download className="w-4 h-4" />
+                    <span>Audio</span>
                   </a>
-                  <PdfViewer
-                    url={pdfUrl}
-                    title="Lesson Document"
-                    triggerLabel={<Maximize className="w-4 h-4" />}
-                    className="p-2! rounded-lg! bg-gray-100! text-gray-600! shadow-none! hover:bg-gray-200! dark:bg-gray-800! dark:text-gray-400! dark:hover:bg-gray-700! dark:hover:text-gray-300! from-transparent! to-transparent! transition-colors"
-                  />
-                </>
+                )}
+                {pdfUrl && (
+                  <>
+                    <a
+                      href={pdfUrl}
+                      download
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-900/30 dark:text-rose-400 dark:hover:bg-rose-900/50 transition-colors"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      PDF
+                    </a>
+                    <PdfViewer
+                      url={pdfUrl}
+                      title="Lesson Document"
+                      triggerLabel={<Maximize className="w-4 h-4" />}
+                      className="p-2! rounded-lg! bg-gray-100! text-gray-600! shadow-none! hover:bg-gray-200! dark:bg-gray-800! dark:text-gray-400! dark:hover:bg-gray-700! dark:hover:text-gray-300! from-transparent! to-transparent! transition-colors"
+                    />
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div
+              className={`w-full bg-[#525659] dark:bg-gray-800 relative flex items-center justify-center overflow-auto h-full`}
+            >
+              {pdfUrl ? (
+                <iframe
+                  src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+                  className="w-full h-full border-none"
+                  title="Lesson PDF Transcript"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-gray-400 dark:text-gray-500 space-y-4">
+                  <div className="p-4 bg-white dark:bg-gray-700 rounded-full shadow-sm">
+                    <FileText className="w-8 h-8 opacity-50 text-gray-500" />
+                  </div>
+                  <p className="text-sm font-medium">No PDF available for this lesson</p>
+                </div>
               )}
             </div>
           </div>
-
-          <div
-            className={`w-full bg-[#525659] dark:bg-gray-800 relative flex items-center justify-center overflow-auto h-full`}
-          >
-            {pdfUrl ? (
-              <iframe
-                src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0`}
-                className="w-full h-full border-none"
-                title="Lesson PDF Transcript"
-              />
-            ) : (
-              <div className="flex flex-col items-center justify-center h-full text-gray-400 dark:text-gray-500 space-y-4">
-                <div className="p-4 bg-white dark:bg-gray-700 rounded-full shadow-sm">
-                  <FileText className="w-8 h-8 opacity-50 text-gray-500" />
+        ) : (
+          /* Popup-based PDF viewer for lessons WITH transcript karaoke */
+          pdfUrl && (
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 flex flex-col sm:flex-row items-center justify-between gap-4 w-full max-w-3xl">
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <div className="p-2.5 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl shrink-0">
+                  <FileText className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                 </div>
-                <p className="text-sm font-medium">No PDF available for this lesson</p>
+                <div>
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-200">
+                    Lesson Document
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    PDF transcript and exercise files
+                  </p>
+                </div>
               </div>
-            )}
-          </div>
-        </div>
+              
+              <div className="flex items-center gap-2.5 w-full sm:w-auto">
+                {contentUrl && (
+                 
+                    <>
+                     <a
+                    href={contentUrl}
+                    download
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Audio</span>
+                  </a>
+                    <a
+                      href={pdfUrl}
+                      download
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-900/30 dark:text-rose-400 dark:hover:bg-rose-900/50 transition-colors"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      PDF
+                    </a>
+                    <PdfViewer
+                      url={pdfUrl}
+                      title="Lesson Document"
+                      triggerLabel={<Maximize className="w-4 h-4" />}
+                      className="p-2! rounded-lg! bg-gray-100! text-gray-600! shadow-none! hover:bg-gray-200! dark:bg-gray-800! dark:text-gray-400! dark:hover:bg-gray-700! dark:hover:text-gray-300! from-transparent! to-transparent! transition-colors"
+                    />
+                  </>
+                )}
+              </div>
+            </div>
+          )
+        )}
       </div>
 
       {/* Complete button */}

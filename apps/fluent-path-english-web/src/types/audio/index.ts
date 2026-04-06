@@ -50,5 +50,6 @@ export interface ListeningSectionProps {
   partId: string
   contentUrl?: string | null
   pdfUrl?: string | null
+  courseId?: string
   onComplete?: () => void
 }

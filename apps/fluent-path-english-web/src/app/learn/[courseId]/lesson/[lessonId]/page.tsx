@@ -165,6 +165,7 @@ export default function LessonPage({
             partId={activePart.id}
             contentUrl={(activePart as { content_url?: string | null }).content_url}
             pdfUrl={(activePart as { pdf_url?: string | null }).pdf_url}
+            courseId={params.courseId}
             onComplete={() => handleSectionComplete(nextSectionId)}
           />
         )
@@ -177,6 +178,7 @@ export default function LessonPage({
             partId={activePart.id}
             contentUrl={(activePart as { content_url?: string | null }).content_url}
             pdfUrl={(activePart as { pdf_url?: string | null }).pdf_url}
+            courseId={params.courseId}
             onComplete={() => handleSectionComplete(nextSectionId)}
           />
         )
@@ -199,6 +201,7 @@ export default function LessonPage({
             partId={activePart.id}
             contentUrl={(activePart as { content_url?: string | null }).content_url}
             pdfUrl={(activePart as { pdf_url?: string | null }).pdf_url}
+            courseId={params.courseId}
             onComplete={() => handleSectionComplete(nextSectionId)}
           />
         )
@@ -211,6 +214,7 @@ export default function LessonPage({
             partId={activePart.id}
             contentUrl={(activePart as { content_url?: string | null }).content_url}
             pdfUrl={(activePart as { pdf_url?: string | null }).pdf_url}
+            courseId={params.courseId}
             onComplete={() => handleSectionComplete(nextSectionId)}
           />
         )
