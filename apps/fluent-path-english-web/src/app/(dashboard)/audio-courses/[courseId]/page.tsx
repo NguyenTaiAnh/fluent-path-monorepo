@@ -15,6 +15,7 @@ import {
   Disc3,
   Headphones,
 } from 'lucide-react'
+import { useDictionary } from '@/i18n/DictionaryProvider'
 
 interface PlaylistResponse {
   courseId: string
@@ -41,6 +42,10 @@ export default function CoursePlaylistPage({
     `/api/courses/${params.courseId}/audio-playlist`,
     fetcher,
   )
+
+  const dict = useDictionary()
+  const t = dict?.audioCourses || {}
+  const cd = dict?.courseDetail || {}
 
   const {
     courseId: activeCourseId,
@@ -86,7 +91,7 @@ export default function CoursePlaylistPage({
   }
 
   const totalDuration = data?.tracks.reduce((acc, t) => acc + (t.duration || 0), 0) || 0
-
+  console.log(totalDuration, data)
   return (
     <div className="max-w-4xl mx-auto">
       {/* Back link */}
@@ -95,7 +100,7 @@ export default function CoursePlaylistPage({
         className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
-        Audio Library
+        {t.title || 'Audio Library'}
       </Link>
 
       {isLoading ? (
@@ -117,7 +122,7 @@ export default function CoursePlaylistPage({
       ) : !data ? (
         <div className="text-center py-20">
           <Music2 className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-          <p className="text-gray-500 dark:text-gray-400">Could not load playlist.</p>
+          <p className="text-gray-500 dark:text-gray-400">{t.error_loading || 'Could not load playlist.'}</p>
         </div>
       ) : (
         <>
@@ -138,7 +143,7 @@ export default function CoursePlaylistPage({
             {/* Course Info */}
             <div className="flex flex-col justify-center text-center sm:text-left">
               <span className="text-xs font-bold uppercase tracking-wider text-indigo-500 dark:text-indigo-400 mb-1">
-                Audio Course
+                {t.audio_course || 'Audio Course'}
               </span>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3">
                 {data.courseTitle}
@@ -146,12 +151,15 @@ export default function CoursePlaylistPage({
               <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-5 justify-center sm:justify-start">
                 <span className="flex items-center gap-1.5">
                   <Disc3 className="w-4 h-4" />
-                  {data.totalTracks} tracks
+                  {data.totalTracks} {t.tracks || 'tracks'}
                 </span>
-                <span className="flex items-center gap-1.5">
-                  <Clock className="w-4 h-4" />
-                  {Math.floor(totalDuration / 60)} min
-                </span>
+                {totalDuration > 0 && (
+                  <span className="flex items-center gap-1.5">
+                    <Clock className="w-4 h-4" />
+                    {Math.floor(totalDuration / 3600) > 0 && `${Math.floor(totalDuration / 3600)} ${cd.hours || 'hours'} `}
+                    {Math.floor((totalDuration % 3600) / 60)} {cd.mins || 'mins'}
+                  </span>
+                )}
               </div>
 
               <button
@@ -161,12 +169,12 @@ export default function CoursePlaylistPage({
                 {isThisCourseActive && isPlaying ? (
                   <>
                     <Pause className="w-5 h-5" />
-                    Pause
+                    {t.pause || 'Pause'}
                   </>
                 ) : (
                   <>
                     <Play className="w-5 h-5 ml-0.5" />
-                    Play All
+                    {t.play_all || 'Play All'}
                   </>
                 )}
               </button>
@@ -178,8 +186,8 @@ export default function CoursePlaylistPage({
             {/* Header */}
             <div className="grid grid-cols-[40px_1fr_100px] sm:grid-cols-[40px_1fr_200px_80px] items-center px-4 py-3 border-b border-gray-100 dark:border-gray-800 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
               <span className="text-center">#</span>
-              <span>Title</span>
-              <span className="hidden sm:block">Section</span>
+              <span>{t.track_title || 'Title'}</span>
+              <span className="hidden sm:block">{t.section || 'Section'}</span>
               <span className="text-right">
                 <Clock className="w-4 h-4 inline" />
               </span>
@@ -190,7 +198,7 @@ export default function CoursePlaylistPage({
               <div className="px-4 py-12 text-center">
                 <Headphones className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
                 <p className="text-gray-500 dark:text-gray-400 text-sm">
-                  No audio tracks found in this course.
+                  {t.no_tracks || 'No audio tracks found in this course.'}
                 </p>
               </div>
             ) : (

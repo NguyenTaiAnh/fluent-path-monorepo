@@ -1,6 +1,6 @@
 'use client'
 
-import { Bell, Menu, Search } from 'lucide-react'
+import { Menu, LogOut } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
@@ -12,6 +12,7 @@ export function DashboardHeader() {
   const router = useRouter()
   const supabase = createClient()
   const dict = useDictionary()
+  const nav = dict?.navigation || {}
   const { toggleMobileSidebar } = useUIStore()
 
   const handleSignOut = async () => {
@@ -20,59 +21,45 @@ export function DashboardHeader() {
   }
 
   return (
-    <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+    <div className="sticky top-0 z-40 flex h-12 sm:h-16 shrink-0 items-center gap-x-2 sm:gap-x-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-3 sm:px-4 shadow-sm lg:gap-x-6 lg:px-8">
+      {/* Mobile menu button */}
       <button
         type="button"
-        className="-m-2.5 p-2.5 text-gray-700 dark:text-gray-300 lg:hidden rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        className="-m-1.5 p-1.5 text-gray-700 dark:text-gray-300 lg:hidden rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
         onClick={toggleMobileSidebar}
         aria-label="Open sidebar"
       >
-        <Menu className="h-6 w-6" aria-hidden="true" />
+        <Menu className="h-5 w-5" aria-hidden="true" />
       </button>
 
       {/* Separator */}
-      <div className="h-6 w-px bg-gray-200 dark:bg-gray-800 lg:hidden" aria-hidden="true" />
+      <div className="h-5 w-px bg-gray-200 dark:bg-gray-800 lg:hidden" aria-hidden="true" />
 
-      <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-        <form className="relative flex flex-1" action="#" method="GET">
-          <label htmlFor="search-field" className="sr-only">
-            Search
-          </label>
-          <Search
-            className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-gray-400"
-            aria-hidden="true"
-          />
-          <input
-            id="search-field"
-            className="block h-full w-full border-0 py-0 pl-8 pr-0 bg-transparent text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
-            placeholder="Search courses, lessons..."
-            type="search"
-            name="search"
-          />
-        </form>
-        <div className="flex items-center gap-x-4 lg:gap-x-6">
-          <button type="button" className="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500">
-            <span className="sr-only">View notifications</span>
-            <Bell className="h-6 w-6" aria-hidden="true" />
-          </button>
+      {/* Spacer — push right items to the end */}
+      <div className="flex-1" />
 
-          <LanguageSwitcher />
-          <ThemeSwitcher />
+      {/* Action buttons — compact on mobile */}
+      <div className="flex items-center gap-x-1.5 sm:gap-x-3 lg:gap-x-5">
+        <LanguageSwitcher />
+        <ThemeSwitcher className="p-1.5 sm:p-2" />
 
-          {/* Separator */}
-          <div
-            className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200 dark:bg-gray-800"
-            aria-hidden="true"
-          />
+        {/* Separator — desktop only */}
+        <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200 dark:bg-gray-800" aria-hidden="true" />
 
-          {/* User profile actions */}
-          <button
-            onClick={handleSignOut}
-            className="text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100 hover:text-indigo-600"
-          >
-            {dict.logout || 'Sign out'}
-          </button>
-        </div>
+        {/* Sign out: text on desktop, icon on mobile */}
+        <button
+          onClick={handleSignOut}
+          className="hidden sm:block text-sm font-semibold leading-6 text-gray-900 dark:text-gray-100 hover:text-indigo-600 transition-colors whitespace-nowrap"
+        >
+          {nav.logout || 'Sign out'}
+        </button>
+        <button
+          onClick={handleSignOut}
+          className="sm:hidden -m-1 p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          aria-label={nav.logout || 'Sign out'}
+        >
+          <LogOut className="h-4 w-4" aria-hidden="true" />
+        </button>
       </div>
     </div>
   )

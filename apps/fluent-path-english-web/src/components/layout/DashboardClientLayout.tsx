@@ -17,11 +17,20 @@ export function DashboardClientLayout({ children }: { children: React.ReactNode 
       <div
         className={cn(
           'flex flex-col min-h-screen bg-gray-50 dark:bg-gray-950 transition-all duration-300',
+          // No left padding on mobile (sidebar is a drawer overlay)
+          // Only add padding on lg+ where sidebar is fixed
           isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64',
         )}
       >
         <DashboardHeader />
-        <main className={cn('py-10', hasPlaylist && 'pb-28')}>
+        <main
+          className={cn(
+            // Reduced top padding on mobile for more content space
+            'flex-1 py-6 sm:py-10',
+            // Extra bottom padding when audio player is visible
+            hasPlaylist && 'pb-32 sm:pb-28',
+          )}
+        >
           <div className="px-4 sm:px-6 lg:px-8">{children}</div>
         </main>
       </div>
@@ -29,4 +38,3 @@ export function DashboardClientLayout({ children }: { children: React.ReactNode 
     </div>
   )
 }
-

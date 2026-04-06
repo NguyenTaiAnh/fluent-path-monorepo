@@ -10,6 +10,7 @@ import { useAudioControls } from '@/hooks/audio/useAudioControls'
 import { ListeningSectionProps } from '@/types/audio'
 import { PdfViewer } from '../ui/PdfViewer'
 import { TranscriptKaraoke } from './TranscriptKaraoke'
+import { useDictionary } from '@/i18n/DictionaryProvider'
 
 export function ListeningSection({
   speed,
@@ -26,6 +27,8 @@ export function ListeningSection({
   const isCompleted = completedSections[`${lessonId}_${partId}`]
   const { formatTime, getAudioSrc } = useAudioUtils()
   const [audioState, dispatch] = useAudioState()
+  const dict = useDictionary()
+  const t = dict?.learning || {}
 
   const audioSrc = useMemo(
     () => getAudioSrc(contentUrl || undefined, speed, partId),
@@ -136,47 +139,47 @@ export function ListeningSection({
       <audio ref={audioRef} src={audioSrc} preload="metadata" loop={audioState.isLooping} />
 
       {/* Header */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Listening Practice ({speed === 'normal' ? 'Normal' : 'Slow'} Speed)
+      <div className="mb-4 sm:mb-6">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+          {t.listen_practice || 'Listening Practice'} ({speed === 'normal' ? t.normal_speed || 'Normal' : t.slow_speed || 'Slow'})
         </h2>
-        <p className="text-gray-500 dark:text-gray-400 mt-2">
-          Listen carefully to the audio and follow along with the transcript below.
+        <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 mt-1 sm:mt-2">
+          {t.listen_desc || 'Listen carefully to the audio and follow along with the transcript below.'}
         </p>
       </div>
 
       {/* Main content - Centered Stacked Layout */}
       <div className="flex-1 flex flex-col items-center justify-center space-y-10 mt-4 w-full max-w-5xl mx-auto">
         {/* Audio Player UI */}
-        <div className="w-full max-w-md bg-white dark:bg-gray-900 p-4 rounded-4xl border border-gray-100 dark:border-gray-800 flex flex-col items-center space-y-3 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
+        <div className="w-full max-w-md bg-white dark:bg-gray-900 p-4 sm:p-5 rounded-3xl sm:rounded-4xl border border-gray-100 dark:border-gray-800 flex flex-col items-center space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
           {/* Control buttons */}
-          <div className="flex items-center justify-center gap-6 w-full">
+          <div className="flex items-center justify-center gap-4 sm:gap-6 w-full">
             <button
               onClick={handleRewind}
-              className="p-3 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors rounded-full hover:bg-gray-50 dark:hover:bg-gray-800"
+              className="p-2 sm:p-3 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors rounded-full hover:bg-gray-50 dark:hover:bg-gray-800"
               aria-label="Rewind 10 seconds"
             >
-              <Rewind className="h-7 w-7" />
+              <Rewind className="h-6 w-6 sm:h-7 sm:w-7" />
             </button>
 
             <button
               onClick={togglePlayPause}
-              className="p-4 bg-indigo-600 text-white rounded-full hover:bg-indigo-500 transition-all hover:scale-105 hover:shadow-lg flex items-center justify-center h-20 w-20 shrink-0"
+              className="p-3 sm:p-4 bg-indigo-600 text-white rounded-full hover:bg-indigo-500 transition-all hover:scale-105 hover:shadow-lg flex items-center justify-center h-16 w-16 sm:h-20 sm:w-20 shrink-0"
               aria-label={audioState.isPlaying ? 'Pause' : 'Play'}
             >
               {audioState.isPlaying ? (
-                <Pause className="h-8 w-8 ml-1" />
+                <Pause className="h-6 w-6 sm:h-8 sm:w-8" />
               ) : (
-                <Play className="h-8 w-8 ml-2" />
+                <Play className="h-6 w-6 sm:h-8 sm:w-8 ml-1 sm:ml-2" />
               )}
             </button>
 
             <button
               onClick={handleForward}
-              className="p-3 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors rounded-full hover:bg-gray-50 dark:hover:bg-gray-800"
+              className="p-2 sm:p-3 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors rounded-full hover:bg-gray-50 dark:hover:bg-gray-800"
               aria-label="Forward 10 seconds"
             >
-              <FastForward className="h-7 w-7" />
+              <FastForward className="h-6 w-6 sm:h-7 sm:w-7" />
             </button>
           </div>
 
@@ -195,30 +198,45 @@ export function ListeningSection({
             </div>
           </div> */}
 
-          {/* Extra controls (Speed & Loop) */}
-          <div className="flex items-center justify-between w-full px-2 pt-2">
+          {/* Progress bar (Moved up) */}
+          <div className="w-full space-y-2 px-1">
+            <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden w-full">
+              <div
+                className="h-full bg-indigo-600 transition-all duration-300"
+                style={{ width: `${audioState.progress}%` }}
+                aria-label={`Audio progress: ${Math.round(audioState.progress)}%`}
+              />
+            </div>
+            <div className="flex justify-between text-xs font-semibold text-gray-400 dark:text-gray-500">
+              <span>{formatTime(audioState.currentTime)}</span>
+              <span>{formatTime(audioState.duration)}</span>
+            </div>
+          </div>
+
+          {/* Extra controls (Speed & Loop) - Centered nicely */}
+          <div className="flex items-center justify-center gap-3 w-full pt-1">
             <button
               onClick={cycleSpeed}
-              className="flex items-center justify-center px-4 py-2 text-xs font-bold text-indigo-700 bg-indigo-50 rounded-xl hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-300 dark:hover:bg-indigo-900/50 transition-colors"
+              className="flex items-center justify-center px-4 py-2 text-xs font-bold text-indigo-700 bg-indigo-50 rounded-full hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-300 dark:hover:bg-indigo-900/50 transition-colors"
               aria-label="Change playback speed"
             >
-              Speed {audioState.playbackRate}x
+              {t.speed || 'Speed'} {audioState.playbackRate}x
             </button>
             <button
               onClick={toggleLoop}
-              className={`flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-colors ${
+              className={`flex items-center justify-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-colors ${
                 audioState.isLooping
                   ? 'text-indigo-700 bg-indigo-50 dark:text-indigo-300 dark:bg-indigo-900/30'
                   : 'text-gray-500 bg-gray-50 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700'
               }`}
               aria-label="Toggle loop"
-              title="Nghe lặp lại"
+              title={t.loop || 'Loop'}
             >
-              Loop
+              {t.loop || 'Loop'}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
+                width="14"
+                height="14"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -232,21 +250,6 @@ export function ListeningSection({
                 <path d="M21 13v1a4 4 0 0 1-4 4H3" />
               </svg>
             </button>
-          </div>
-
-          {/* Progress bar */}
-          <div className="w-full space-y-2">
-            <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden w-full">
-              <div
-                className="h-full bg-indigo-600 transition-all duration-300"
-                style={{ width: `${audioState.progress}%` }}
-                aria-label={`Audio progress: ${Math.round(audioState.progress)}%`}
-              />
-            </div>
-            <div className="flex justify-between text-xs font-semibold text-gray-400 dark:text-gray-500">
-              <span>{formatTime(audioState.currentTime)}</span>
-              <span>{formatTime(audioState.duration)}</span>
-            </div>
           </div>
         </div>
 
@@ -265,7 +268,7 @@ export function ListeningSection({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-950/30 gap-4">
               <h3 className="font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
                 <FileText className="w-5 h-5 text-indigo-500" />
-                Lesson Document
+                {t.lesson_document || 'Lesson Document'}
               </h3>
               <div className="flex items-center gap-3">
                 {contentUrl && (
@@ -294,7 +297,7 @@ export function ListeningSection({
                     </a>
                     <PdfViewer
                       url={pdfUrl}
-                      title="Lesson Document"
+                      title={t.lesson_document || 'Lesson Document'}
                       triggerLabel={<Maximize className="w-4 h-4" />}
                       className="p-2! rounded-lg! bg-gray-100! text-gray-600! shadow-none! hover:bg-gray-200! dark:bg-gray-800! dark:text-gray-400! dark:hover:bg-gray-700! dark:hover:text-gray-300! from-transparent! to-transparent! transition-colors"
                     />
@@ -317,7 +320,7 @@ export function ListeningSection({
                   <div className="p-4 bg-white dark:bg-gray-700 rounded-full shadow-sm">
                     <FileText className="w-8 h-8 opacity-50 text-gray-500" />
                   </div>
-                  <p className="text-sm font-medium">No PDF available for this lesson</p>
+                  <p className="text-sm font-medium">{t.no_pdf || 'No PDF available for this lesson'}</p>
                 </div>
               )}
             </div>
@@ -332,28 +335,29 @@ export function ListeningSection({
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-800 dark:text-gray-200">
-                    Lesson Document
+                    {t.lesson_document || 'Lesson Document'}
                   </h3>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    PDF transcript and exercise files
+                    {t.pdf_desc || 'PDF transcript and exercise files'}
                   </p>
                 </div>
               </div>
               
-              <div className="flex items-center gap-2.5 w-full sm:w-auto">
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
                 {contentUrl && (
-                 
-                    <>
-                     <a
+                  <a
                     href={contentUrl}
                     download
                     target="_blank"
                     rel="noreferrer"
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50 transition-colors"
                   >
                     <Download className="w-4 h-4" />
-                    <span>Audio</span>
+                    <span>{t.audio || 'Audio'}</span>
                   </a>
+                )}
+                {pdfUrl && (
+                  <>
                     <a
                       href={pdfUrl}
                       download
@@ -362,14 +366,16 @@ export function ListeningSection({
                       className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-900/30 dark:text-rose-400 dark:hover:bg-rose-900/50 transition-colors"
                     >
                       <Download className="w-3.5 h-3.5" />
-                      PDF
+                      {t.pdf || 'PDF'}
                     </a>
-                    <PdfViewer
-                      url={pdfUrl}
-                      title="Lesson Document"
-                      triggerLabel={<Maximize className="w-4 h-4" />}
-                      className="p-2! rounded-lg! bg-gray-100! text-gray-600! shadow-none! hover:bg-gray-200! dark:bg-gray-800! dark:text-gray-400! dark:hover:bg-gray-700! dark:hover:text-gray-300! from-transparent! to-transparent! transition-colors"
-                    />
+                    <div className="flex items-center justify-center flex-1 sm:flex-none">
+                      <PdfViewer
+                        url={pdfUrl}
+                        title={t.lesson_document || 'Lesson Document'}
+                        triggerLabel={<Maximize className="w-4 h-4" />}
+                        className="px-4! py-2! sm:p-2.5! h-full! w-full! sm:w-auto! flex! items-center! justify-center! rounded-lg! bg-gray-100! text-gray-600! shadow-none! hover:bg-gray-200! dark:bg-gray-800! dark:text-gray-400! dark:hover:bg-gray-700! from-transparent! to-transparent! transition-colors"
+                      />
+                    </div>
                   </>
                 )}
               </div>
@@ -379,16 +385,16 @@ export function ListeningSection({
       </div>
 
       {/* Complete button */}
-      <div className="mt-8 flex justify-end">
+      <div className="mt-8 flex sm:justify-end w-full">
         <button
           onClick={handleComplete}
-          className={`rounded-full px-8 py-3 text-sm font-bold shadow-md transition-all ${
+          className={`w-full sm:w-auto rounded-full px-8 py-3.5 sm:py-3 text-sm font-bold shadow-md transition-all ${
             isCompleted
               ? 'bg-emerald-500 text-white hover:bg-emerald-400'
               : 'bg-indigo-600 text-white hover:bg-indigo-500 hover:shadow-lg hover:-translate-y-0.5'
           }`}
         >
-          {isCompleted ? '✓ Completed • Next Part' : 'Complete & Next ➔'}
+          {isCompleted ? t.completed_next || '✓ Completed • Next Part' : t.complete_next || 'Complete & Next ➔'}
         </button>
       </div>
     </div>

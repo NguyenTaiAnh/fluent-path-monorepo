@@ -1,33 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceClient } from '@/utils/supabase/service'
 import { slugify } from '@/lib/utils'
+import { requireAdmin } from '@/lib/auth-guard'
 
 type Params = { params: Promise<{ id: string }> }
 
-/**
- * GET /api/admin/courses/[id]
- * Get a single course with its sections and lessons
- */
+/** GET /api/admin/courses/[id] */
 export async function GET(_request: NextRequest, { params }: Params) {
+  const auth = await requireAdmin()
+  if (auth.error) return auth.error
+
   try {
     const { id } = await params
-    const supabase = createServiceClient()
+    const supabase = auth.supabase
 
     const { data, error } = await supabase
       .from('courses')
-      .select(
-        `
-        *,
-        sections (
-          *,
-          lessons (
-            *,
-            lesson_media (*),
-            vocabularies (*)
-          )
-        )
-      `,
-      )
+      .select(`*, sections (*, lessons (*, lesson_media (*), vocabularies (*)))`)
       .eq('id', id)
       .order('order_index', { referencedTable: 'sections', ascending: true })
       .single()
@@ -39,7 +27,6 @@ export async function GET(_request: NextRequest, { params }: Params) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 })
     }
 
-    // Sort nested lessons by order_index
     if (data?.sections) {
       data.sections = data.sections.map((section: Record<string, unknown>) => ({
         ...section,
@@ -56,33 +43,20 @@ export async function GET(_request: NextRequest, { params }: Params) {
   }
 }
 
-/**
- * PUT /api/admin/courses/[id]
- * Update a course
- */
+/** PUT /api/admin/courses/[id] */
 export async function PUT(request: NextRequest, { params }: Params) {
+  const auth = await requireAdmin()
+  if (auth.error) return auth.error
+
   try {
     const { id } = await params
-    const supabase = createServiceClient()
+    const supabase = auth.supabase
     const body = await request.json()
 
-    const {
-      title,
-      description,
-      level,
-      status,
-      order_index,
-      price,
-      original_price,
-      thumbnail_url,
-      metadata,
-    } = body
+    const { title, description, level, status, order_index, price, original_price, thumbnail_url, metadata } = body
 
     const updateData: Record<string, unknown> = {}
-    if (title !== undefined) {
-      updateData.title = title
-      updateData.slug = slugify(title)
-    }
+    if (title !== undefined) { updateData.title = title; updateData.slug = slugify(title) }
     if (description !== undefined) updateData.description = description
     if (level !== undefined) updateData.level = level
     if (status !== undefined) updateData.status = status
@@ -92,12 +66,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
     if (thumbnail_url !== undefined) updateData.thumbnail_url = thumbnail_url
     if (metadata !== undefined) updateData.metadata = metadata
 
-    const { data, error } = await supabase
-      .from('courses')
-      .update(updateData)
-      .eq('id', id)
-      .select()
-      .single()
+    const { data, error } = await supabase.from('courses').update(updateData).eq('id', id).select().single()
 
     if (error) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 })
@@ -110,16 +79,14 @@ export async function PUT(request: NextRequest, { params }: Params) {
   }
 }
 
-/**
- * DELETE /api/admin/courses/[id]
- * Delete a course (cascades to sections, lessons, media)
- */
+/** DELETE /api/admin/courses/[id] */
 export async function DELETE(_request: NextRequest, { params }: Params) {
+  const auth = await requireAdmin()
+  if (auth.error) return auth.error
+
   try {
     const { id } = await params
-    const supabase = createServiceClient()
-
-    const { error } = await supabase.from('courses').delete().eq('id', id)
+    const { error } = await auth.supabase.from('courses').delete().eq('id', id)
 
     if (error) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 })

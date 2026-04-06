@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceClient } from '@/utils/supabase/service'
 import { slugify } from '@/lib/utils'
+import { requireAdmin, escapeLikePattern } from '@/lib/auth-guard'
 
-/**
- * GET /api/admin/sections?course_id=&search=&sort=&order=&page=&pageSize=
- */
+/** GET /api/admin/sections */
 export async function GET(request: NextRequest) {
+  const auth = await requireAdmin()
+  if (auth.error) return auth.error
+
   try {
-    const supabase = createServiceClient()
+    const supabase = auth.supabase
     const { searchParams } = new URL(request.url)
 
     const courseId = searchParams.get('course_id')
@@ -15,18 +16,14 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get('sort') || 'order_index'
     const order = searchParams.get('order') || 'asc'
     const page = parseInt(searchParams.get('page') || '1')
-    const pageSize = parseInt(searchParams.get('pageSize') || '10')
+    const pageSize = Math.min(parseInt(searchParams.get('pageSize') || '10'), 100)
 
     let query = supabase
       .from('sections')
       .select('*, courses!inner(id, title), lessons(count)', { count: 'exact' })
 
-    if (courseId) {
-      query = query.eq('course_id', courseId)
-    }
-    if (search) {
-      query = query.ilike('title', `%${search}%`)
-    }
+    if (courseId) query = query.eq('course_id', courseId)
+    if (search) query = query.ilike('title', `%${escapeLikePattern(search)}%`)
 
     query = query.order(sort, { ascending: order === 'asc' })
 
@@ -53,12 +50,12 @@ export async function GET(request: NextRequest) {
   }
 }
 
-/**
- * POST /api/admin/sections
- */
+/** POST /api/admin/sections */
 export async function POST(request: NextRequest) {
+  const auth = await requireAdmin()
+  if (auth.error) return auth.error
+
   try {
-    const supabase = createServiceClient()
     const body = await request.json()
     const { course_id, title, description, order_index } = body
 
@@ -69,14 +66,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const slug = slugify(title)
-
-    const { data, error } = await supabase
+    const { data, error } = await auth.supabase
       .from('sections')
       .insert({
         course_id,
         title,
-        slug,
+        slug: slugify(title),
         description: description || null,
         order_index: order_index ?? 0,
       })

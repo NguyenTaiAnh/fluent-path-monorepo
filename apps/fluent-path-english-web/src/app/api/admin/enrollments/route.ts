@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceClient } from '@/utils/supabase/service'
+import { requireAdmin } from '@/lib/auth-guard'
 
-/**
- * GET /api/admin/enrollments?user_id=&course_id=&status=&sort=&order=
- */
+/** GET /api/admin/enrollments */
 export async function GET(request: NextRequest) {
+  const auth = await requireAdmin()
+  if (auth.error) return auth.error
+
   try {
-    const supabase = createServiceClient()
+    const supabase = auth.supabase
     const { searchParams } = new URL(request.url)
 
     const userId = searchParams.get('user_id')
@@ -15,7 +16,7 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get('sort') || 'enrolled_at'
     const order = searchParams.get('order') || 'desc'
     const page = parseInt(searchParams.get('page') || '1')
-    const pageSize = parseInt(searchParams.get('pageSize') || '20')
+    const pageSize = Math.min(parseInt(searchParams.get('pageSize') || '20'), 100)
 
     let query = supabase
       .from('enrollments')
@@ -52,12 +53,12 @@ export async function GET(request: NextRequest) {
   }
 }
 
-/**
- * POST /api/admin/enrollments - Assign course to user
- */
+/** POST /api/admin/enrollments */
 export async function POST(request: NextRequest) {
+  const auth = await requireAdmin()
+  if (auth.error) return auth.error
+
   try {
-    const supabase = createServiceClient()
     const body = await request.json()
     const { user_id, course_id, status, expires_at } = body
 
@@ -68,15 +69,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await auth.supabase
       .from('enrollments')
       .upsert(
-        {
-          user_id,
-          course_id,
-          status: status || 'active',
-          expires_at: expires_at || null,
-        },
+        { user_id, course_id, status: status || 'active', expires_at: expires_at || null },
         { onConflict: 'user_id,course_id' },
       )
       .select()
@@ -87,7 +83,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true, data }, { status: 201 })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/utils/supabase/server'
+import { requireAdmin } from '@/lib/auth-guard'
+import { uploadLimiter, getClientIp } from '@/lib/rate-limiter'
 import crypto from 'crypto'
 
 /** Extract Cloudinary public_id from a secure_url */
 function extractPublicId(url: string): string | null {
   try {
-    // e.g. https://res.cloudinary.com/cloud/image/upload/v123/folder/image.jpg
     const match = url.match(/\/upload\/(?:v\d+\/)?(.+?)(?:\.[^.]+)?$/)
     return match ? match[1] : null
   } catch {
@@ -44,18 +44,15 @@ async function deleteCloudinaryAsset(publicId: string) {
  * Requires admin authentication.
  */
 export async function POST(request: NextRequest) {
+  // Rate limiting
+  const rateCheck = uploadLimiter.check(getClientIp(request))
+  if (!rateCheck.allowed) return rateCheck.response!
+
+  // Admin auth check (not just login — must be admin)
+  const auth = await requireAdmin()
+  if (auth.error) return auth.error
+
   try {
-    // Auth check
-    const supabase = await createClient()
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const formData = await request.formData()
     const file = formData.get('file') as File | null
     const oldUrl = formData.get('oldUrl') as string | null
@@ -125,7 +122,6 @@ export async function POST(request: NextRequest) {
     if (oldUrl && oldUrl.includes('cloudinary.com')) {
       const oldPublicId = extractPublicId(oldUrl)
       if (oldPublicId) {
-        // Fire and forget — don't block the response
         deleteCloudinaryAsset(oldPublicId).catch((e) =>
           console.warn('Failed to delete old Cloudinary image:', e),
         )

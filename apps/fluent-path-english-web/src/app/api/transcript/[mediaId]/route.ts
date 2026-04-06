@@ -1,15 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireAuth } from '@/lib/auth-guard'
 import { createAdminClient } from '@/services/supabaseAdmin'
 
 /**
  * GET /api/transcript/[mediaId]
  * Fetch transcript data for a lesson_media record.
- * Accepts either a lesson_media ID or a lesson ID — it checks both.
+ * Requires authenticated user.
  */
 export async function GET(
   _request: NextRequest,
   context: { params: Promise<{ mediaId: string }> },
 ) {
+  // Require authenticated user
+  const auth = await requireAuth()
+  if (auth.error) return auth.error
+
   try {
     const { mediaId } = await context.params
     const supabase = createAdminClient()

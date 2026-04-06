@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceClient } from '@/utils/supabase/service'
+import { requireAdmin } from '@/lib/auth-guard'
 
 interface MediaInsertItem {
   media_type: string
@@ -17,11 +17,12 @@ type Params = { params: Promise<{ id: string }> }
 
 /** GET /api/admin/lessons/[id]/media */
 export async function GET(_request: NextRequest, { params }: Params) {
+  const auth = await requireAdmin()
+  if (auth.error) return auth.error
+
   try {
     const { id } = await params
-    const supabase = createServiceClient()
-
-    const { data, error } = await supabase
+    const { data, error } = await auth.supabase
       .from('lesson_media')
       .select('*')
       .eq('lesson_id', id)
@@ -39,9 +40,11 @@ export async function GET(_request: NextRequest, { params }: Params) {
 
 /** POST /api/admin/lessons/[id]/media — Add media to a lesson */
 export async function POST(request: NextRequest, { params }: Params) {
+  const auth = await requireAdmin()
+  if (auth.error) return auth.error
+
   try {
     const { id } = await params
-    const supabase = createServiceClient()
     const body = await request.json()
 
     const items: MediaInsertItem[] = Array.isArray(body) ? body : [body]
@@ -59,7 +62,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       metadata: item.metadata || {},
     }))
 
-    const { data, error } = await supabase.from('lesson_media').insert(mediaToInsert).select()
+    const { data, error } = await auth.supabase.from('lesson_media').insert(mediaToInsert).select()
 
     if (error) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 })

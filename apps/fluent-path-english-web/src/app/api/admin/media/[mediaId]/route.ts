@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceClient } from '@/utils/supabase/service'
+import { requireAdmin } from '@/lib/auth-guard'
 
 type Params = { params: Promise<{ mediaId: string }> }
 
 /** PUT /api/admin/media/[mediaId] */
 export async function PUT(request: NextRequest, { params }: Params) {
+  const auth = await requireAdmin()
+  if (auth.error) return auth.error
+
   try {
     const { mediaId } = await params
-    const supabase = createServiceClient()
     const body = await request.json()
 
     const updateData: Record<string, unknown> = {}
@@ -21,7 +23,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
     if (body.mime_type !== undefined) updateData.mime_type = body.mime_type
     if (body.metadata !== undefined) updateData.metadata = body.metadata
 
-    const { data, error } = await supabase
+    const { data, error } = await auth.supabase
       .from('lesson_media')
       .update(updateData)
       .eq('id', mediaId)
@@ -40,18 +42,19 @@ export async function PUT(request: NextRequest, { params }: Params) {
 
 /** DELETE /api/admin/media/[mediaId] */
 export async function DELETE(_request: NextRequest, { params }: Params) {
+  const auth = await requireAdmin()
+  if (auth.error) return auth.error
+
   try {
     const { mediaId } = await params
-    const supabase = createServiceClient()
-
-    const { error } = await supabase.from('lesson_media').delete().eq('id', mediaId)
+    const { error } = await auth.supabase.from('lesson_media').delete().eq('id', mediaId)
 
     if (error) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 })
     }
 
     return NextResponse.json({ success: true, message: 'Media deleted' })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }
 }

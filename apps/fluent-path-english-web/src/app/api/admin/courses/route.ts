@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceClient } from '@/utils/supabase/service'
 import { slugify } from '@/lib/utils'
+import { requireAdmin, escapeLikePattern } from '@/lib/auth-guard'
 
 /**
  * GET /api/admin/courses
  * List all courses with filters: ?status=&level=&search=&sort=&order=&page=&pageSize=
  */
 export async function GET(request: NextRequest) {
+  const auth = await requireAdmin()
+  if (auth.error) return auth.error
+
   try {
-    const supabase = createServiceClient()
+    const supabase = auth.supabase
     const { searchParams } = new URL(request.url)
 
     const status = searchParams.get('status')
@@ -17,7 +20,7 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get('sort') || 'order_index'
     const order = searchParams.get('order') || 'asc'
     const page = parseInt(searchParams.get('page') || '1')
-    const pageSize = parseInt(searchParams.get('pageSize') || '50')
+    const pageSize = Math.min(parseInt(searchParams.get('pageSize') || '50'), 100)
 
     let query = supabase.from('courses').select('*, sections(lessons(id))', { count: 'exact' })
 
@@ -28,7 +31,7 @@ export async function GET(request: NextRequest) {
       query = query.eq('level', level)
     }
     if (search) {
-      query = query.ilike('title', `%${search}%`)
+      query = query.ilike('title', `%${escapeLikePattern(search)}%`)
     }
 
     const ascending = order === 'asc'
@@ -44,7 +47,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 })
     }
 
-    // Compute live lesson count from nested data and strip raw sections
     type RawCourse = {
       sections?: Array<{ lessons?: Array<{ id: string }> }>
       [key: string]: unknown
@@ -74,8 +76,11 @@ export async function GET(request: NextRequest) {
  * Create a new course
  */
 export async function POST(request: NextRequest) {
+  const auth = await requireAdmin()
+  if (auth.error) return auth.error
+
   try {
-    const supabase = createServiceClient()
+    const supabase = auth.supabase
     const body = await request.json()
     const {
       title,

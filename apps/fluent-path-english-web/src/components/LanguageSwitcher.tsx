@@ -12,11 +12,11 @@ export function LanguageSwitcher() {
   }
 
   return (
-    <div className="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700">
-      <Globe className="w-4 h-4" />
-      <button onClick={() => switchLang('en')} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">EN</button>
+    <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 sm:bg-gray-50 sm:dark:bg-gray-800 sm:px-3 sm:py-1.5 sm:rounded-full sm:border sm:border-gray-200 sm:dark:border-gray-700">
+      <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 hidden sm:block" />
+      <button onClick={() => switchLang('en')} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors px-1 py-0.5">EN</button>
       <span className="text-gray-300 dark:text-gray-600">|</span>
-      <button onClick={() => switchLang('vi')} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">VI</button>
+      <button onClick={() => switchLang('vi')} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors px-1 py-0.5">VI</button>
     </div>
   )
 }

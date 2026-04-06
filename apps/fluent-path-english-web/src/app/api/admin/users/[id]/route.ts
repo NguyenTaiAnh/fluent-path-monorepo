@@ -1,22 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceClient } from '@/utils/supabase/service'
+import { requireAdmin } from '@/lib/auth-guard'
 
 type Params = { params: Promise<{ id: string }> }
 
 /** GET /api/admin/users/[id] - User detail with enrollments & progress */
 export async function GET(_request: NextRequest, { params }: Params) {
+  const auth = await requireAdmin()
+  if (auth.error) return auth.error
+
   try {
     const { id } = await params
-    const supabase = createServiceClient()
 
     const [{ data: profile, error: profileError }, { data: enrollments }, { data: progress }] =
       await Promise.all([
-        supabase.from('profiles').select('*').eq('id', id).single(),
-        supabase
+        auth.supabase.from('profiles').select('*').eq('id', id).single(),
+        auth.supabase
           .from('enrollments')
           .select('*, courses(id, title, level, thumbnail_url)')
           .eq('user_id', id),
-        supabase
+        auth.supabase
           .from('user_progress')
           .select('*, lessons(id, title, section_id)')
           .eq('user_id', id)
@@ -43,17 +45,27 @@ export async function GET(_request: NextRequest, { params }: Params) {
 
 /** PUT /api/admin/users/[id] - Update user profile (role, active status) */
 export async function PUT(request: NextRequest, { params }: Params) {
+  const auth = await requireAdmin()
+  if (auth.error) return auth.error
+
   try {
     const { id } = await params
-    const supabase = createServiceClient()
     const body = await request.json()
+
+    // Prevent self-demotion
+    if (id === auth.user.id && body.role !== undefined && body.role !== 'admin') {
+      return NextResponse.json(
+        { success: false, error: 'Cannot change your own admin role' },
+        { status: 400 },
+      )
+    }
 
     const updateData: Record<string, unknown> = {}
     if (body.role !== undefined) updateData.role = body.role
     if (body.is_active !== undefined) updateData.is_active = body.is_active
     if (body.full_name !== undefined) updateData.full_name = body.full_name
 
-    const { data, error } = await supabase
+    const { data, error } = await auth.supabase
       .from('profiles')
       .update(updateData)
       .eq('id', id)
@@ -65,7 +77,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
     }
 
     return NextResponse.json({ success: true, data })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }
 }

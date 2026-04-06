@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireAuth } from '@/lib/auth-guard'
 import { createAdminClient } from '@/services/supabaseAdmin'
 
+/**
+ * GET /api/courses/[courseId]/audio-playlist
+ * Returns all audio tracks for a course, sorted by section/lesson order.
+ * Requires authenticated user.
+ */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   context: { params: Promise<{ courseId: string }> },
 ) {
+  // Require authenticated user
+  const auth = await requireAuth()
+  if (auth.error) return auth.error
+
   try {
     const { courseId } = await context.params
     const supabase = createAdminClient()

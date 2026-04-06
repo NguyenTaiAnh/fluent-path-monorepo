@@ -1,13 +1,16 @@
 import { NextResponse } from 'next/server'
-import { createServiceClient } from '@/utils/supabase/service'
+import { requireAdmin } from '@/lib/auth-guard'
 
 /**
  * GET /api/admin/dashboard
  * Returns dashboard statistics for the admin panel.
  */
 export async function GET() {
+  const auth = await requireAdmin()
+  if (auth.error) return auth.error
+
   try {
-    const supabase = createServiceClient()
+    const supabase = auth.supabase
 
     // Run all queries in parallel for speed
     const [
